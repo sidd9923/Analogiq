@@ -5,12 +5,6 @@ This was a research project I was a part of during my graduate studies at the Un
 
 A significant problem to address is **social proximity** – linking researchers and seekers through a social network graph built upon **Semantic Scholar IDs**. This enables users to identify connections based on academic co-authorship and discover collaborators within the shortest path across disciplines.
 
-## Value proposition
-The product helps researchers:
-- Discover collaborators and novel ideas outside their immediate academic circles.
-- Build and rank a personalized network of potential guides or collaborators using co-authorship graphs, research embeddings, and expertise-aware relevance scoring.
-- Leverage a scalable distributed architecture—powered by Celery, Kafka/Faust, and MLflow Gateway—for fast graph queries, real-time updates, and reliable analogical search.
-
 ## Step-by-Step Implementation:
 1. Social Network Graph Search (Graph DB + GPU Acceleration)
 Construct a co-authorship knowledge graph using Semantic Scholar Author IDs, store it in a Graph Database (Neo4j/ArangoDB), and compute researcher proximity using shortest-path queries, optionally accelerated with cuGraph for large-scale traversal.
