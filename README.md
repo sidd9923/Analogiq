@@ -12,18 +12,28 @@ The product helps researchers:
 - Leverage a scalable distributed architecture—powered by Celery, Kafka/Faust, and MLflow Gateway—for fast graph queries, real-time updates, and reliable analogical search.
 
 ## Step-by-Step Implementation:
-- **Social Network Graph Search**: Build a GPU-accelerated co-authorship knowledge graph from Semantic Scholar IDs and compute researcher proximity using shortest-path queries.
+1. Social Network Graph Search (Graph DB + GPU Acceleration)
+Construct a co-authorship knowledge graph using Semantic Scholar Author IDs, store it in a Graph Database (Neo4j/ArangoDB), and compute researcher proximity using shortest-path queries, optionally accelerated with cuGraph for large-scale traversal.
 
-- **Analogical Guide Ranking**: Generate embeddings for researchers and problems, and use ANN-based (Annoy) similarity search to retrieve and rank top-K guides by expertise, relevance, and proximity.
+2. Analogical Guide Retrieval & Ranking (Embeddings + Vector DB)
+Generate text embeddings for problems, papers, and researchers and store them in a Vector Database (pgvector/Qdrant). Use an ANN index (Annoy/Faiss) to retrieve and rank top-K guides based on semantic similarity, expertise overlap, and graph-based proximity.
 
-- **Distributed Task Execution (Celery)**: Offload heavy ingestion, graph expansion, embedding generation, and ranking workflows to Celery workers for scalable, non-blocking background processing.
+3. Distributed Task Execution (Ray/Celery Workers)
+Offload heavy workloads—including ingestion from Semantic Scholar, graph expansion, embedding generation, and ranking refreshes—to Celery or Ray worker pools running inside containers for non-blocking, horizontally scalable computation.
 
-- **Event-Driven Streaming (Kafka + Faust)**: Emit and consume system events (e.g., author_ingested, problem_created) via Kafka and process them with Faust agents to maintain real-time state and orchestrate downstream actions.
+4. Event-Driven Streaming Architecture (Kafka + Faust)
+Emit domain events such as author_ingested, graph_updated, problem_created, and rankings_updated to Kafka. Use Faust agents to maintain real-time system state, trigger downstream computation, and orchestrate microservice interactions through an event-driven pipeline.
 
-- **LLM Governance (MLflow Gateway)**: Route all analogical reasoning LLM calls through MLflow Gateway for centralized model routing, prompt/response logging, monitoring, and secure, auditable LLM inference.
+5. LLM Governance & Unification (MLflow Gateway + Multi-Provider Adapters)
+All LLM calls—used for analogical explanations, guide summaries, and reasoning—flow through an MLflow Gateway or internal LLM Orchestrator that provides centralized model routing, prompt logging, audit trails, and interoperability with OpenAI, Anthropic, Vertex AI, and local LLMs.
 
-## Inference
-The system will support **online inference** to allow users to run search queries in real time. Both the **GPU-accelerated graph search** and **Annoy-based guide ranking** ensure that even with large datasets, queries are processed efficiently. Real-time processing is critical for providing up-to-date results to researchers.
+### Online Inference
+The platform supports real-time inference across all microservices:
+- Graph search (GPU-accelerated optional) efficiently retrieves social proximity information.
+- Vector DB + ANN enables low-latency analogical guide ranking (<200ms target).
+- gRPC services and GraphQL resolvers unify results at the API gateway.
+
+This ensures researchers receive fast, up-to-date analogical matches and collaboration opportunities, even over large research corpora.
 
 ## Constraints
 - Creating the entire social network graph is very time-inducing so keep this process to a minimum
