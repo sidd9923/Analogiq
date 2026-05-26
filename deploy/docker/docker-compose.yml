@@ -1,0 +1,29 @@
+version: "3.9"
+
+services:
+  api:
+    build:
+      context: ../..
+      dockerfile: deploy/docker/Dockerfile
+    image: analogiq-api:dev
+    ports:
+      - "5000:5000"
+    environment:
+      - FLASK_ENV=development
+      - DEBUG=true
+      - DATABASE_URL=sqlite:////app/data/analogiq.db
+      - FAISS_INDEX_PATH=/app/data/faiss.index
+      - GRAPH_STORE_PATH=/app/data/graphs
+      - RAY_NUM_CPUS=2
+    volumes:
+      - ../../data:/app/data       # persist index + DB between restarts
+      - ../../app:/app/app:ro      # hot-reload source (dev only)
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:5000/health"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+    restart: unless-stopped
+
+volumes:
+  data:

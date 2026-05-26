@@ -1,0 +1,109 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: analogiq-api
+  namespace: analogiq
+  labels:
+    app: analogiq-api
+    version: "1.0"
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: analogiq-api
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 1
+      maxUnavailable: 0
+  template:
+    metadata:
+      labels:
+        app: analogiq-api
+    spec:
+      serviceAccountName: analogiq
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 1000
+
+      containers:
+        - name: api
+          image: ghcr.io/sidd9923/analogiq-api:latest
+          imagePullPolicy: Always
+          ports:
+            - containerPort: 5000
+              name: http
+          env:
+            - name: FLASK_ENV
+              value: production
+            - name: DATABASE_URL
+              valueFrom:
+                secretKeyRef:
+                  name: analogiq-secrets
+                  key: database-url
+            - name: SECRET_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: analogiq-secrets
+                  key: secret-key
+            - name: FAISS_INDEX_PATH
+              value: /data/faiss.index
+            - name: GRAPH_STORE_PATH
+              value: /data/graphs
+            - name: RAY_NUM_CPUS
+              value: "2"
+          resources:
+            requests:
+              cpu: "500m"
+              memory: "1Gi"
+            limits:
+              cpu: "2"
+              memory: "4Gi"
+          volumeMounts:
+            - name: data-volume
+              mountPath: /data
+          livenessProbe:
+            httpGet:
+              path: /health
+              port: 5000
+            initialDelaySeconds: 20
+            periodSeconds: 30
+          readinessProbe:
+            httpGet:
+              path: /health
+              port: 5000
+            initialDelaySeconds: 10
+            periodSeconds: 10
+
+      volumes:
+        - name: data-volume
+          persistentVolumeClaim:
+            claimName: analogiq-data-pvc
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: analogiq-api-svc
+  namespace: analogiq
+spec:
+  selector:
+    app: analogiq-api
+  ports:
+    - protocol: TCP
+      port: 80
+      targetPort: 5000
+  type: ClusterIP
+
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: analogiq-data-pvc
+  namespace: analogiq
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 10Gi
