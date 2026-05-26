@@ -290,7 +290,7 @@ pytest tests/ -v --cov=app --cov-report=term-missing
 
 ## Citation
 
-> Shankar, S. et al. "Analogiq: Accelerating Cross-Domain Scientific Discovery Through Analogical Matchmaking." *ACM CHI 2024 Workshop on Human-AI Collaboration in Research.*
+> Shankar, S.; Chan, Joel; Ding, Jason et al. "Analogiq: Accelerating Cross-Domain Scientific Discovery Through Analogical Matchmaking." *ACM CHI 2024 Workshop on Human-AI Collaboration in Research.*
 
 ---
 
